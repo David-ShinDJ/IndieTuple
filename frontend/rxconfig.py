@@ -1,5 +1,5 @@
 import reflex as rx
 
 config = rx.Config(
-    app_name="Front_IndieTuple",
+    app_name="frontend",
 )
