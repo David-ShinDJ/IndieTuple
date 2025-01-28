@@ -1,6 +1,4 @@
 import reflex as rx
-from rxconfig import config
-from typing import List
 from ..state import Message, MessageState
 
 message_style = dict(
@@ -14,7 +12,8 @@ message_style = dict(
 
 def chat_room() -> rx.Component:
     return rx.vstack(
-        rx.box(
+          rx.scroll_area(
+                rx.box(
             rx.foreach(
                 MessageState.messages,
                 lambda m: message_box(m.text, m.is_my_message, m.index)
@@ -23,7 +22,15 @@ def chat_room() -> rx.Component:
             padding="1em",  # 내부 여백
         ),
         width="100%",
-        spacing="2",  # 0-9 사이의 숫자만 사용 가능
+        spacing="2",
+        ),
+                    rx.hstack(
+                send_button(),
+                style={
+                    "width": "100%",
+                }
+            ),
+            # 0-9 사이의 숫자만 사용 가능
     )
 
 def message_box(text: str, is_my_message: bool, index: int):
