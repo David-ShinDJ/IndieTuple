@@ -1,76 +1,38 @@
-from flask import Flask, jsonify
-from flask_socketio import SocketIO
-from flask import Flask, request, jsonify
+# Flask 서버
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import jwt
+from datetime import datetime, timedelta
+
 app = Flask(__name__)
+CORS(app)
+app.config['SECRET_KEY'] = 'your-secret-key'  # 실제 운영시에는 환경변수로 관리
 
-# Database
-todos : list[dict[str, any]] = [
-      {'id': 1, 'text': 'Reflex 배우기', 'completed': False},
-    {'id': 2, 'text': 'IndieTuple 개발하기', 'completed': False},
-    {'id': 3, 'text': "데이터 베이스 공부하기", 'completed': False}
-]
+@app.route('/api/token', methods=['POST'])
+def generate_token():
+    try:
+        data = request.get_json()
+        score = data.get('score', 0)
+        
+        if score >= 10:
+            token = jwt.encode(
+                {
+                    'score': score,
+                    'timestamp': str(datetime.utcnow()),
+                    'exp': datetime.utcnow() + timedelta(hours=1)
+                },
+                app.config['SECRET_KEY'],
+                algorithm='HS256'
+            )
+            return jsonify({"token": token})
+        else:
+            return jsonify({"error": "Score not high enough"}), 400
+            
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
-
-def db_add_todo(text: str):
-    new_todo = {'id': len(todos) + 1, 'text': text, 'completed': False}
-    todos.append(new_todo)
-    return True
-
-def read_todos():
-    return todos
-
-def find_todo(text: str):
-    for todo in todos:
-        if todo['text'] == text:
-            return todo
-    return None
-
-def db_update_todo(text: str):
-    for todo in todos:
-        if todo['text'] == text:
-            todo['completed'] = not todo['completed']
-            return True
-    return False
-
-def db_delete_todo(text: str):
-    index = next((index for index, todo in enumerate(todos) if todo['text'] == text), None)
-    if index is not None:
-        todos.pop(index)
-        return True
-    return False
-
-# 데이터 로드 
-@app.route("/api/todos", methods=["GET"])
-def get_todos():
-    todos = read_todos()
-    return jsonify(todos)
-
-## text 조회
-# @app.route("api/todos/get/<str:text>", methods=["GET"])
-# def get_todo(text):
-#     return jsonify()
-
-@app.route("/api/todos/add", methods=["POST"])
-def add_todo():
-    data = request.get_json()
-    db_add_todo(data['text'])
-    return jsonify({'message': 'Todo added!'}), 201
-
-@app.route("/api/todos/update", methods=["PUT"])
-def update_todo():
-    data = request.get_json()
-    text = data["text"]
-    print(text)
-    db_update_todo(text)
-    return jsonify({"message": "Todo updated!"}), 200
-
-@app.route('/api/todos/delete/<string:text>', methods=["DELETE"])
-def delete_todo(text):
-    db_delete_todo(text)
-    return jsonify({'message': 'Todo deleted!'})
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
 
 
-# 데이터 로드
