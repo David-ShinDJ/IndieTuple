@@ -1,47 +1,42 @@
 import reflex as rx
-import styles.style as style
-from .components.chat import chat_room, send_button
-from .components.user import user_form
-from .state import Message, MessageState
-import random
-from .pages.redirect import redirect
-from .pages.test import test
-## FrontEnd Logic
+from .components.game import game_component, GameState
 
-def index() -> rx.Component:
-    # 쿠키 체크를 통한 접근 제어 
-    if True :
-        return rx.fragment(
-            rx.script("window.location.href = '/test'")
+def main() -> rx.Component:
+    return rx.cond(
+        GameState.token != "",
+        rx.center(
+            rx.vstack(
+                rx.heading("인디튜플", size="lg"),
+                rx.text("인디튜플 페이지입니다.", size="md"), 
+            )
+        ),
+        rx.center(
+            rx.script("window.location.href = '/game'")
         )
+    )
 
-    return rx.vstack(
-             rx.hstack(
-            rx.text("Welcome to Indie Tuple", style=style.text_style),
-            style=style.stack_style,
-        ),
-        rx.hstack(
-            style= {
-                "background_image": "url('/background.png')",
-                "background_size": "cover",
-                "background_position": "center",
-                "border_radius": "15px 50px",
-                "border": "5px solid #555",
-                "width": "100%",
-                "height": "25vh",
-            }
-        ),
-        rx.flex(
-            chat_room(),
-            user_form(),
-            width="100%",
-            justify_content="center",
-            align_items="center",
+def game() -> rx.Component:
+    return rx.center(
+        rx.vstack(
+            rx.heading("타겟 클릭 게임", size="lg"),
+            rx.text("100점을 달성하면 인디튜플 페이지로 이동합니다!", size="sm", color="gray"),
+            game_component(),
+            bg=rx.color("gray", 7),
+            margin_top="5em",
+            margin_x="25vw",
+            padding="1em",
+            border_radius="0.5em",
+            spacing="3",
         ),
     )
 
-## TODO: 
+def index() -> rx.Component:
+        return rx.center(
+        rx.script("window.location.href = '/game'")
+    )
+
+# Reflex (frontend)
 app = rx.App()
 app.add_page(index)
-app.add_page(redirect, route="/redirect")
-app.add_page(test, route="/test")
+app.add_page(game, route="/game", title="게임")
+app.add_page(main, route="/main", title="인디튜플")
