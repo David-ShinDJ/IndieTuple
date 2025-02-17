@@ -8,7 +8,6 @@ def user_form() -> rx.Component:
             edit_profile_component(),
             profile_component()
         ),
-
     )
 
 def profile_component() -> rx.Component:
